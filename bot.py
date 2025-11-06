@@ -1,14 +1,37 @@
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+import os
+import json
+from flask import Flask, request
+import requests
 
+app = Flask(__name__)
 
-BOT_TOKEN = "8242087713:AAHE3wPsVibCktn5DA94ThTi1l9CQcj9Tu0"
+# --- YOUR BOT TOKEN ---
+BOT_TOKEN = "8211952324:AAGetnqvH7ZHooh3cbeMjGiqL_d3TsD_GgY"  # your real token here
+TELEGRAM_API_URL = f"https://api.telegram.org/bot{BOT_TOKEN}/"
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Hello! 👋 Your bot is alive and running!")
+@app.route('/')
+def home():
+    return "Bot is running!"
+
+@app.route(f"/{BOT_TOKEN}", methods=["POST"])
+def webhook():
+    update = request.get_json()
+    if "message" in update:
+        chat_id = update["message"]["chat"]["id"]
+        text = update["message"].get("text", "")
+
+        if text.lower() == "/start":
+            send_message(chat_id, "🚀 Welcome to Cosmic ! Type 'play' to begin your adventure.")
+        elif text.lower() == "play":
+            send_message(chat_id, "🌌 You find yourself aboard a starship entering unknown space...")
+        else:
+            send_message(chat_id, "✨ Type 'play' to start your intergalactic quest!")
+    return "OK", 200
+
+def send_message(chat_id, text):
+    url = TELEGRAM_API_URL + "sendMessage"
+    payload = {"chat_id": chat_id, "text": text}
+    requests.post(url, json=payload)
 
 if __name__ == "__main__":
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
-    app.add_handler(CommandHandler("start", start))
-    print("✅ Bot is running... Press Ctrl+C to stop.")
-    app.run_polling()
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
