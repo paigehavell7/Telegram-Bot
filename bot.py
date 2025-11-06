@@ -5,9 +5,8 @@ import requests
 
 app = Flask(__name__)
 
-# --- YOUR BOT TOKEN ---
-BOT_TOKEN = 
-# your real token here
+# --- YOUR BOT TOKEN (from GitHub secret) ---
+BOT_TOKEN = os.environ.get("BOT_TOKEN")
 TELEGRAM_API_URL = f"https://api.telegram.org/bot{BOT_TOKEN}/"
 
 @app.route('/')
